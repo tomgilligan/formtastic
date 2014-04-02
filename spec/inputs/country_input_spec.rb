@@ -50,6 +50,45 @@ describe 'country input' do
 
   end
 
+  describe "when using country_select < 2.0" do
+    before do
+      expect_any_instance_of(Formtastic::Inputs::CountryInput).to receive(:prioritity_countries_as_argument?) { true }
+    end
+
+    it 'should provide priority_countries as an argument to the helper' do
+      concat(semantic_form_for(@new_post) do |builder|
+        builder.stub(:country_select).with(
+          :country, 
+          ["Australia", "Canada", "United Kingdom", "United States"], # This is the only interesting bit
+          {}, 
+          {:id=>"post_country", :required=>false, :autofocus=>false}
+        ).and_return(
+          Formtastic::Util.html_safe("<select><option>...</option></select>")
+        )
+        concat(builder.input(:country, :as => :country))
+      end)
+    end
+  end
+
+  describe "when using country_select >= 2.0" do
+    before do
+      expect_any_instance_of(Formtastic::Inputs::CountryInput).to receive(:prioritity_countries_as_argument?) { false }
+    end
+
+    it 'should provide priority_countries to the helper through the options hash' do
+      concat(semantic_form_for(@new_post) do |builder|
+        builder.stub(:country_select).with(
+          :country, 
+          {:priority_countries=>["Australia", "Canada", "United Kingdom", "United States"]}, 
+          {:id=>"post_country", :required=>false, :autofocus=>false}
+        ).and_return(
+          Formtastic::Util.html_safe("<select><option>...</option></select>")
+        )
+        concat(builder.input(:country, :as => :country))
+      end)
+    end
+  end
+
   describe ":priority_countries option" do
 
     it "should be passed down to the country_select helper when provided" do

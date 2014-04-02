@@ -54,12 +54,44 @@ module Formtastic
         raise "To use the :country input, please install a country_select plugin, like this one: https://github.com/jamesds/country-select" unless builder.respond_to?(:country_select)
         input_wrapping do
           label_html <<
-          builder.country_select(method, priority_countries, input_options, input_html_options)
+          country_select_helper
         end
+      end
+
+      def country_select_helper
+        prioritity_countries_as_argument? ? 
+          country_select_helper_with_priority_countries_as_argument :
+          country_select_helper_with_priority_countries_as_option
+      end
+
+      def country_select_helper_with_priority_countries_as_argument
+        builder.country_select(method, priority_countries, input_options, input_html_options)
+      end
+
+      def country_select_helper_with_priority_countries_as_option
+        builder.country_select(method, input_options_with_priority_countries, input_html_options)
       end
       
       def priority_countries
         options[:priority_countries] || builder.priority_countries
+      end
+
+      # TODO: Version 2 of stefanpenner/country_select deviates from the original arguments structure
+      # we've supported. Leaving this true uses the older API, but provides developers with a simple
+      # hook they can override if they want to use the newer API.
+      #
+      # Ideally, we'd find a way to detect or configure what API to use. Here's what I've considered
+      # so far:
+      #
+      # * a configuration value at the Formtastic level (urgh)
+      # * detection based on the arity of the helper method (doesn't work, they're both `-2`)
+      # * detection based on CountrySelect::VERSION (too specific to only one plugin)
+      def prioritity_countries_as_argument?
+        true
+      end
+
+      def input_options_with_priority_countries
+        input_options.merge(:priority_countries => priority_countries)
       end
 
     end
