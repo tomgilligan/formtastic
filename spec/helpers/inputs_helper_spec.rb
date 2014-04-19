@@ -335,6 +335,20 @@ describe 'Formtastic::FormBuilder#inputs' do
         output_buffer.should have_tag("form fieldset.#{@class_option}")
       end
     end
+
+    describe 'when the last line is not an input' do
+      before do
+        concat(semantic_form_for(@new_post) do |builder|
+          [1].each do |i|
+            concat(builder.input(:title))
+          end
+        end)
+      end
+
+      it 'should have an input' do
+        output_buffer.should have_tag('input[type=text]')
+      end
+    end
   
   end
   
