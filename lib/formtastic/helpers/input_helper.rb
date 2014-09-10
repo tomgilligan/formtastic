@@ -237,7 +237,7 @@ module Formtastic
         options = options.dup # Allow options to be shared without being tainted by Formtastic
         options[:as] ||= default_input_type(method, options)
 
-        klass = input_class(options[:as])
+        klass = namespaced_input_class(options[:as])
 
         klass.new(self, template, @object, @object_name, method, options).to_html
       end
@@ -317,17 +317,41 @@ module Formtastic
       # @return [Class] An input class constant
       #
       # @example Normal use
-      #   input_class(:string) #=> Formtastic::Inputs::StringInput
-      #   input_class(:date) #=> Formtastic::Inputs::DateInput
+      #   namespaced_input_class(:string) #=> Formtastic::Inputs::StringInput
+      #   namespaced_input_class(:date) #=> Formtastic::Inputs::DateInput
       #
       # @example When a top-level class is found
-      #   input_class(:string) #=> StringInput
-      #   input_class(:awesome) #=> AwesomeInput
-      def input_class(as)
+      #   namespaced_input_class(:string) #=> StringInput
+      #   namespaced_input_class(:awesome) #=> AwesomeInput
+      def namespaced_input_class(as)
         @input_class_finder ||= self.class.input_class_finder.new(self)
         @input_class_finder.find(as)
       rescue Formtastic::InputClassFinder::NotFoundError
         raise Formtastic::UnknownInputError, "Unable to find input #{$!.message}"
+      end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def input_class(as)
+        ::ActiveSupport::Deprecation.warn("Overriding input_class is deprecated in favour of :input_namespaces configuration and will be removed in Formtastic 4.0")
+        namespaced_input_class(as)
+      end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def custom_input_class_name(as)
+        ::ActiveSupport::Deprecation.warn("Overriding custom_input_class_name is deprecated in favour of :input_namespaces configuration and will be removed in Formtastic 4.0")
+        "#{as.to_s.camelize}Input"
+      end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def standard_input_class_name(as)
+        ::ActiveSupport::Deprecation.warn("Overriding standard_input_class_name is deprecated in favour of :input_namespaces configuration and will be removed in Formtastic 4.0")
+        "Formtastic::Actions::#{as.to_s.camelize}Input"
       end
     end
   end

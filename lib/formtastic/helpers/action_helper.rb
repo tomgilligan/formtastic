@@ -80,7 +80,7 @@ module Formtastic
         options = options.dup # Allow options to be shared without being tainted by Formtastic
         options[:as] ||= default_action_type(method, options)
 
-        klass = action_class(options[:as])
+        klass = namespaced_action_class(options[:as])
 
         klass.new(self, template, @object, @object_name, method, options).to_html
       end
@@ -105,12 +105,37 @@ module Formtastic
       # .action_namespaces +FormBuilder+ configuration setting.
       # See +Formtastic::Helpers::InputHelper#action_class+ for details.
       #
-      def action_class(as)
+      def namespaced_action_class(as)
         @action_class_finder ||= self.class.action_class_finder.new(self)
         @action_class_finder.find(as)
       rescue Formtastic::ActionClassFinder::NotFoundError
         raise Formtastic::UnknownActionError, "Unable to find action #{$!.message}"
       end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def action_class(as)
+        ::ActiveSupport::Deprecation.warn("Overriding action_class is deprecated in favour of :action_namespaces configuration and will be removed in Formtastic 4.0")
+        namespaced_action_class(as)
+      end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def custom_action_class_name(as)
+        ::ActiveSupport::Deprecation.warn("Overriding custom_action_class_name is deprecated in favour of :action_namespaces configuration and will be removed in Formtastic 4.0")
+        "#{as.to_s.camelize}Action"
+      end
+
+      # TODO: Deprecated, remove from v4.0. This method is not called by 
+      # Formtastic, it's just here as a courtesy to other libraries that
+      # monkey patch this method.
+      def standard_action_class_name(as)
+        ::ActiveSupport::Deprecation.warn("Overriding standard_action_class_name is deprecated in favour of :action_namespaces configuration and will be removed in Formtastic 4.0")
+        "Formtastic::Actions::#{as.to_s.camelize}Action"
+      end
+
     end
   end
 end
